@@ -1,11 +1,16 @@
 {
   "meta": {
-    "dataVersion": "2026-09-20.1",
+    "dataVersion": "2026-09-20.2",
     "sources": [
       {
         "url": "model_recall",
         "retrievedAt": "2026-09-20",
         "usedFor": "原文・作者・読み（一次情報の取得が不可だったため想起値）"
+      },
+      {
+        "url": "https://ja.wikipedia.org/w/index.php?title=%E6%B1%BA%E3%81%BE%E3%82%8A%E5%AD%97&action=raw",
+        "retrievedAt": "2026-09-20",
+        "usedFor": "決まり字一覧との全100首照合、および id44 yomi.kami 修正の根拠（当該ページには {{出典の明記}} タグあり）"
       }
     ],
     "readingSource": "model_recall",
@@ -13,18 +18,15 @@
     "kimariji": {
       "expectedSource": "hypothesis",
       "expected": { "1": 7, "2": 42, "3": 37, "4": 6, "5": 2, "6": 6 },
-      "observed": { "1": 7, "2": 43, "3": 36, "4": 6, "5": 2, "6": 6 },
+      "observed": { "1": 7, "2": 42, "3": 37, "4": 6, "5": 2, "6": 6 },
       "mismatchedIds": [],
       "knownIssue": {
         "decision": "r12-9",
         "date": "2026-09-20",
-        "status": "open",
-        "buckets": {
-          "2": { "expected": 42, "observed": 43 },
-          "3": { "expected": 37, "observed": 36 }
-        },
+        "status": "resolved",
+        "buckets": {},
         "impact": "ルールエンジンの動作には無影響（T-02: 全100首で正解100・お手つき0）。影響は文書上の仮説値との差のみ。",
-        "resolution": "人間が一次資料でyomiを照合するか、仮説値42/37の出典を確認する。expected/expectedSourceの書き換えは禁止（裁定#24 / r12-7）。"
+        "resolution": "r16: 決まり字一覧（sources の ja.wikipedia）と全100首を機械照合し、長さ不一致は id44（中納言朝忠「逢ふことの」）1首のみと特定。一覧の決まり字は「おおこ」であり、yomi.kami を おうことの→おおことの に修正して解消（2字43→42 / 3字36→37）。expected/expectedSource は不変。残る未検証: 出典ページに {{出典の明記}} タグがあり、全日本かるた協会の公式一覧とは未照合。"
       }
     }
   },
@@ -72,7 +74,7 @@
     { "id": 41, "author": "壬生忠見", "original": { "kami": "恋すてふ わが名はまだき 立ちにけり", "shimo": "人知れずこそ 思ひそめしか" }, "yomi": { "kami": "こいすちょうわがなわまだきたちにけり", "shimo": "ひとしれずこそおもいそめしか" } },
     { "id": 42, "author": "清原元輔", "original": { "kami": "契りきな かたみに袖を しぼりつつ", "shimo": "末の松山 波越さじとは" }, "yomi": { "kami": "ちぎりきなかたみにそでおしぼりつつ", "shimo": "すえのまつやまなみこさじとわ" } },
     { "id": 43, "author": "権中納言敦忠", "original": { "kami": "逢ひ見ての のちの心に くらぶれば", "shimo": "昔はものを 思はざりけり" }, "yomi": { "kami": "あいみてののちのこころにくらぶれば", "shimo": "むかしわものおおもわざりけり" } },
-    { "id": 44, "author": "中納言朝忠", "original": { "kami": "逢ふことの 絶えてしなくは なかなかに", "shimo": "人をも身をも 恨みざらまし" }, "yomi": { "kami": "おうことのたえてしなくわなかなかに", "shimo": "ひとおもみおもうらみざらまし" } },
+    { "id": 44, "author": "中納言朝忠", "original": { "kami": "逢ふことの 絶えてしなくは なかなかに", "shimo": "人をも身をも 恨みざらまし" }, "yomi": { "kami": "おおことのたえてしなくわなかなかに", "shimo": "ひとおもみおもうらみざらまし" } },
     { "id": 45, "author": "謙徳公", "original": { "kami": "あはれとも いふべき人は 思ほえで", "shimo": "身のいたづらに なりぬべきかな" }, "yomi": { "kami": "あわれともいうべきひとわおもおえで", "shimo": "みのいたずらになりぬべきかな" } },
     { "id": 46, "author": "曾禰好忠", "original": { "kami": "由良のとを 渡る舟人 かぢをたえ", "shimo": "ゆくへも知らぬ 恋の道かな" }, "yomi": { "kami": "ゆらのとおわたるふなびとかじおたえ", "shimo": "ゆくえもしらぬこいのみちかな" } },
     { "id": 47, "author": "恵慶法師", "original": { "kami": "八重むぐら しげれる宿の さびしきに", "shimo": "人こそ見えね 秋は来にけり" }, "yomi": { "kami": "やえむぐらしげれるやどのさびしきに", "shimo": "ひとこそみえねあきわきにけり" } },

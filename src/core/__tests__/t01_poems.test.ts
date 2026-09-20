@@ -163,7 +163,7 @@ describe("T-01 R-03 決まり字は派生計算する", () => {
       "決まり字分布が仮説と不一致。expected/expectedSourceを書き換えて通さないこと（裁定#24）。",
       "既知差分（r12-9で統合ブロッカーから除外済み）と異なる場合は回帰。",
       "meta.kimariji.knownIssue.buckets を確認し、想定外なら原因を調査してから",
-      "knownIssue を更新すること。差が解消した場合は knownIssue 自体を削除する。",
+      "knownIssue を更新すること。差が解消した場合は status を resolved にし buckets を空にする。",
     ].join("\n");
     expect(meta.kimariji.knownIssue, hint).toBeDefined();
     expect(diff, `${hint}\n${JSON.stringify(diff)}`).toEqual(
