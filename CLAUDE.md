@@ -32,7 +32,8 @@
 src/
 ├── app/                    # App Router (Server Components 中心) + api/ (Route Handlers)
 ├── components/             # ui/ (shadcn primitives) + 機能別
-├── core/                   # DOM非依存の純TS: conductor / scheduler / rule / jev adapter / mock / judge / logger
+├── core/                   # DOM非依存の純TS: poems / conductor / scheduler / judge / log / budget
+│   └── engines/            # 差し替え可能な EngineInput→EngineOutput 実装: rule / jev / mock
 └── lib/
     ├── env.ts              # 環境変数 Zod 検証 (唯一の参照窓口)
     ├── result.ts           # Result<T> 型
