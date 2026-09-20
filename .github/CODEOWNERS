@@ -1,0 +1,26 @@
+# 品質ゲートの設定ファイル自体を保護する。
+#
+# ゲートを緩める変更 (ルールの無効化、CI ステップの削除、continue-on-error の追加、
+# lint スクリプトの `|| true` 化) が黙って通る状態では、他のどの設定も意味を持たない。
+# 原本: agent-company-os の skills/engineering/nextjs-quality-gate/references/ci-wiring.md
+#
+# 既定のオーナーはテンプレート所有者 (@House-lovers7)。
+# 組織 repo やチーム運用へ展開する場合は @org/team へ置き換える。
+# 対象 repo に write 権限を持たないアカウントを書くと、GitHub 側で
+# 無効なエントリとして無視され、保護が効かない。
+
+# lint / format のルール
+/biome.json              @House-lovers7
+/eslint.config.mjs       @House-lovers7
+
+# 型契約
+/tsconfig.json           @House-lovers7
+
+# ゲートを実際に走らせる配線
+/.github/workflows/      @House-lovers7
+
+# quality command の定義 (scripts の書き換えでゲートを空振りさせられる)
+/package.json            @House-lovers7
+
+# このファイル自身
+/.github/CODEOWNERS      @House-lovers7

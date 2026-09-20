@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# 同一 ref の実行中 run はキャンセルする
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  PNPM_VERSION: "9.15.0"
+
+jobs:
+  # ---------------------------------------------------------------
+  # 軽量: lint / typecheck (DB 不要)
+  # ---------------------------------------------------------------
+  static:
+    name: lint + typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Biome: format + 構文 lint (高速)
+      - name: Lint
+        run: pnpm lint
+
+      # ESLint: 型情報ルール + 境界 API 封鎖 (process.env 直参照 / 生 fetch を禁止)
+      # 型情報を構築するため tsc と同程度の時間がかかる。
+      - name: Lint (type-aware)
+        run: pnpm lint:types
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+  # ---------------------------------------------------------------
+  # unit tests (Vitest)
+  # ---------------------------------------------------------------
+  test:
+    name: unit tests
+    runs-on: ubuntu-latest
+    needs: static
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests
+        run: pnpm test
+
+  # ---------------------------------------------------------------
+  # ビルド検証 (本番ビルドが成功することを確認)
+  # デプロイ・外部送信は行わない (デプロイは Vercel の Git 連携等に任せる)
+  # ---------------------------------------------------------------
+  build:
+    name: next build
+    runs-on: ubuntu-latest
+    needs: static
+    timeout-minutes: 10
+    env:
+      # build 時点でも lib/env.ts が起動時検証するため最低限のダミー値を入れる
+      DATABASE_URL: postgres://unused:unused@127.0.0.1:54999/unused
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54999
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: anon_dummy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+  # ---------------------------------------------------------------
+  # 本番依存 (prod deps) のみの脆弱性ゲート
+  # ---------------------------------------------------------------
+  audit-prod:
+    name: audit (prod deps)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: pnpm audit (prod only, fail on high+)
+        run: pnpm audit --prod --audit-level=high
