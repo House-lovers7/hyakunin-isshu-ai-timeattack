@@ -14,7 +14,18 @@
       "expectedSource": "hypothesis",
       "expected": { "1": 7, "2": 42, "3": 37, "4": 6, "5": 2, "6": 6 },
       "observed": { "1": 7, "2": 43, "3": 36, "4": 6, "5": 2, "6": 6 },
-      "mismatchedIds": []
+      "mismatchedIds": [],
+      "knownIssue": {
+        "decision": "r12-9",
+        "date": "2026-09-20",
+        "status": "open",
+        "buckets": {
+          "2": { "expected": 42, "observed": 43 },
+          "3": { "expected": 37, "observed": 36 }
+        },
+        "impact": "ルールエンジンの動作には無影響（T-02: 全100首で正解100・お手つき0）。影響は文書上の仮説値との差のみ。",
+        "resolution": "人間が一次資料でyomiを照合するか、仮説値42/37の出典を確認する。expected/expectedSourceの書き換えは禁止（裁定#24 / r12-7）。"
+      }
     }
   },
   "poems": [

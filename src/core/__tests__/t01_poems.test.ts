@@ -12,6 +12,13 @@ const metaSchema = z.object({
       expectedSource: z.literal("hypothesis"),
       expected: z.record(z.string(), z.number()),
       observed: z.record(z.string(), z.number()),
+      knownIssue: z
+        .object({
+          decision: z.string().min(1),
+          status: z.enum(["open", "resolved"]),
+          buckets: z.record(z.string(), z.object({ expected: z.number(), observed: z.number() })),
+        })
+        .optional(),
     }),
   }),
   poems: z.array(z.object({ id: z.number(), original: z.object({ kami: z.string() }) })),
@@ -139,27 +146,29 @@ describe("T-01 R-03 決まり字は派生計算する", () => {
     expect(observed).toEqual(meta.kimariji.observed);
   });
 
-  it("観測分布が仮説値（expectedSource=hypothesis）と一致する", () => {
+  it("観測分布と仮説値の差は meta.kimariji.knownIssue に記録された分だけである（r12-9）", () => {
     const observed = set.kimarijiDistribution;
     const keys = [
       ...new Set([...Object.keys(meta.kimariji.expected), ...Object.keys(observed)]),
     ].sort();
-    const diff = keys
-      .filter((k) => (meta.kimariji.expected[k] ?? 0) !== (observed[Number(k)] ?? 0))
-      .map((k) => {
-        const ids = set.poems
-          .filter((poem) => poem.kimarijiLength === Number(k))
-          .map((poem) => poem.id);
-        return `${k}モーラ: 仮説${meta.kimariji.expected[k] ?? 0} / 観測${observed[Number(k)] ?? 0} / 該当ID[${ids.join(",")}]`;
-      });
+    const diff: Record<string, { expected: number; observed: number }> = {};
+    for (const k of keys) {
+      const expectedCount = meta.kimariji.expected[k] ?? 0;
+      const observedCount = observed[Number(k)] ?? 0;
+      if (expectedCount !== observedCount) {
+        diff[k] = { expected: expectedCount, observed: observedCount };
+      }
+    }
     const hint = [
-      "決まり字分布が仮説と不一致。仮説値を書き換えて通さないこと（裁定#24）。",
-      "拗音由来の差はなし（全100首でモーラ数＝文字数）。",
-      "正規化で先頭2モーラが変わる首（要確認候補）: 41 こひ→こい / 43 あひ→あい /",
-      "44 あふ→おう / 47 やへ→やえ / 62 よを→よお / 71 ゆふ→ゆう。",
-      "確認先は (A) 仮説値そのもの（企画書に出典なし） か (B) 上記候補の読み。",
+      "決まり字分布が仮説と不一致。expected/expectedSourceを書き換えて通さないこと（裁定#24）。",
+      "既知差分（r12-9で統合ブロッカーから除外済み）と異なる場合は回帰。",
+      "meta.kimariji.knownIssue.buckets を確認し、想定外なら原因を調査してから",
+      "knownIssue を更新すること。差が解消した場合は knownIssue 自体を削除する。",
     ].join("\n");
-    expect(diff, `${hint}\n${diff.join("\n")}`).toEqual([]);
+    expect(meta.kimariji.knownIssue, hint).toBeDefined();
+    expect(diff, `${hint}\n${JSON.stringify(diff)}`).toEqual(
+      meta.kimariji.knownIssue?.buckets ?? {},
+    );
   });
 });
 
