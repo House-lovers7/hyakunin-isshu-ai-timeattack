@@ -253,7 +253,7 @@ D3 の Gate はこの表である。以降の文書・実装は、ここにあ�
 | フィールド | `inputVersion`, `inputVersionUsed`, `revealed`, `moraCount`, `serverElapsedMs`, `upstreamElapsedMs`, `engineElapsedMs`, `droppedUpdates`, `late`, `configVersion`, `dataVersion`, `promptVersion`, `jevConfigured` |
 | 時刻 | `t_start`, `t_unique`, `t_snapshot`, `t_dispatch`, `t_response`, `t_commit`, `t_present`, `t_publish` |
 
-**綴りの規約**: TypeScript の型・フィールドは camelCase。時刻の記号だけは企画書§8 の表記（`t_snake`）をそのまま使う — 企画書・要件・指標式で繰り返し出る記号で、言い換えると突き合わせができなくなるため。
+**綴りの規約**: TypeScript の型・フィールドは camelCase。時刻の記号だけは企画書§8 の表記（`t_snake`）をそのまま使う — 企画書・要件・指標式で繰り返し出る記号で、言い換えると突き合わせができなくなるため。この例外は**時刻を表す `t_*` の値すべて**に及ぶ。`t_publish` は企画書§8 の7点には含まれないが同じ `t_snake` 規約に入れる（フィールドは `InputSnapshot.t_publish` であって `tPublish` ではない）。型名そのもの（`InputSnapshot`）は camelCase 規約のまま。
 **JSONL の属性名は本文書で確定しない**。D4（`docs/03_data_model.md`）が `src/core/log.ts` と一致させる。
 
 **r1 から綴りを変えたもの / 本文書で新たに名付けたもの**（P1 は変更後を使う）:
