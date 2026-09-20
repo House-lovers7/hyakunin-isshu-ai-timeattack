@@ -42,30 +42,30 @@ node scripts/ledger-append.mjs --task_id D2 --date 2026-09-20 --runtime claude-c
 
 ## トークン実測値の出所
 
-`session-health:usage-report` プラグイン（`usage_report.py`）と同じ集計規則（`requestId` または `message.id` による重複排除、`<synthetic>` モデル除外、4フィールド合計）で transcript から算出した**整数**を入れる。`usage-report` の画面表示は `38.2k` のように3〜4桁へ丸めるため、表示値ではなく整数を記録する。
+`session-health:usage-report` プラグイン（`usage_report.py`）と同じ集計規則（`requestId` または `message.id` による重複排除、`<synthetic>` モデル除外、4フィールド合計）で transcript から算出した**整数**を入れる。`usage-report` の画面表示は `38.2k` のように3〜4桁へ丸めるため、表示値ではなく整数を記録する。**ただし subagent 由来の行だけは重複排除の採用レコードが異なる**（下の「subagent 行の集計規則」を必ず読む）。
 
 セッションが再開されて transcript が複製された場合（例: r2 の `00e65641` と `cc27fff0`）、**上位集合の1本だけを記録する**。両方足すと重複した request を二重計上する。r2 では11 request が完全に重複していることを実測確認した。
 
-### 既知の過少計上: subagent 行の `output_tokens`（未修正）
+### subagent 行の集計規則（2026-09-20 r7 で修正済み）
 
-`usage_report.py` は同一 `requestId` の**最初のレコードを採用**して以降を捨てる。ところがサブエージェントの transcript は1 request をストリーミングの複数レコードに分けて書き、**最初のレコードには途中経過の小さい `output_tokens` しか入っていない**。結果、現在の台帳の subagent 2行は出力トークンを大きく過少計上している。
+`usage_report.py` は同一 `requestId` の**最初のレコード**を採用して以降を捨てる。サブエージェントの transcript は1 request をストリーミングの複数レコードへ分けて書き、最初のレコードには途中経過の小さい値しか入っていない。このため subagent 行は 4列すべてが過少計上されていた。
 
-| 行 | 現在値（最初のレコード） | request ごとの最大値 | 比 |
-|---|---|---|---|
-| T0 | 1,169 | 15,834 | 13.5倍 |
-| D0 | 650 | 14,252 | 21.9倍 |
-| r1 r2 r3 r4 r5（main） | — | 同値 | 1.0倍 |
+**本台帳は `requestId` ごとの最終レコード（= 各列の最大値）を採る規則へ変更した。** 対象は subagent 由来の T0・D0 の2行で、`cost_usd_est` も引き直した。
 
-main セッションの transcript は 1 request = 1 レコードなので影響がない。**修正するときは、`requestId` ごとに最後（=最大）のレコードを採る規則へ変えて2行を再計算し、`cost_usd_est` も同時に引き直す**。本セッションでは出所ツールとの整合を崩さないため値を変更せず、事実の記録に留めた。この過少計上を残したまま「subagent は出力が少ない」と読まないこと。
+| 行 | 列 | 旧（先頭レコード） | 新（最終レコード） | 比 |
+|---|---|---|---|---|
+| T0 | output_tokens | 1,169 | 15,834 | 13.5倍 |
+| T0 | cache_read | 992,707 | 1,109,989 | 1.12倍 |
+| T0 | cost_usd_est | 0.5469 | 0.7205 | 1.32倍 |
+| D0 | output_tokens | 650 | 14,252 | 21.9倍 |
+| D0 | cache_read | 1,214,427 | 1,306,090 | 1.08倍 |
+| D0 | cost_usd_est | 0.4095 | 0.5732 | 1.40倍 |
 
-未計測行の後追い（back-fill）:
+main セッションの transcript は 1 request = 1 レコードなので、どちらの規則でも値が変わらない（r1〜r6 で実測確認済み。比 1.0）。したがって**この変更は main 行の値に影響しない**。
 
-```bash
-python3 ~/.claude/plugins/cache/house-lovers7/session-health/0.3.1/scripts/usage_report.py \
-  --transcript ~/.claude/projects/-Users-tg-projects-app-development/<session-id>.jsonl
-```
+**出所ツールとの差**: この規則変更により、subagent 行は `usage_report.py` の画面出力と一致しなくなる（台帳のほうが大きい）。ツールと突き合わせるときは、main 行は一致・subagent 行は台帳が正しい、として読む。`ledger-append.mjs` で subagent 行を足すときは、最終レコード採用で数えた値を渡すこと。
 
-丸めのない整数が必要なら、上記の集計規則を写した自前スクリプトで再計算する。
+検証: 同一 subagent の transcript は親セッションの複製（`00e65641` と `cc27fff0`）両方に存在するが、どちらから集計しても同値になることを確認済み。
 
 ## 費用表記の前提（必ず読む）
 
