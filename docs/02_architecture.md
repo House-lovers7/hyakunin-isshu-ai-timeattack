@@ -233,6 +233,8 @@ D3 の Gate はこの表である。以降の文書・実装は、ここにあ�
 | `log` | `src/core/log.ts` | JSONL イベントの型と追記。**属性名の正本は D4** |
 | `fixedRunner` | `src/core/fixed-runner.ts` | `fixed` モードの実行（R-27） |
 | `aggregate` | `scripts/aggregate.ts` | 指標の再計算（R-21, R-23） |
+
+`CLAUDE.md` のディレクトリ規則は3方式を `src/core/` 直下に並べて書いているが、本表は `src/core/engines/` へまとめた。3つが `EngineInput → EngineOutput` という**同一の差し替え可能な契約**を実装する唯一のグループで、conductor / scheduler / judge（差し替えない部品）と同じ階層に置くと役割が読めなくなるため。P1 でこの配置を採ったら `CLAUDE.md` の木も合わせる。
 | `measure` | `scripts/measure.ts` | 測定 CLI。反復ごとの seed と出題順生成（R-28） |
 
 ### 6.2 型・値
