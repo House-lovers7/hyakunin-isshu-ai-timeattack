@@ -5,14 +5,15 @@ import { z } from "zod";
  * サーバのみで参照する値と、クライアントに露出する NEXT_PUBLIC_* を分けて定義。
  *
  * 規約: アプリコードから `process.env` を直接参照せず、必ずこのモジュール経由で読む。
- * (drizzle.config.ts / next.config.ts などビルドツール設定は例外)
+ * (next.config.ts / vitest.config.ts などビルドツール設定は例外)
  */
 
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   // TypeSafe AI (Jev) — 未設定でも起動可能（LIVE_MODE=falseならmock/replayのみで動く）
   TYPESAFE_API_KEY: z.string().min(1).optional(),
-  LIVE_MODE: z.coerce.boolean().default(false),
+  // 注意: z.coerce.boolean() は "false" を true にするため使わない (Boolean("false") === true)
+  LIVE_MODE: z.stringbool().default(false),
   BUDGET_MAX_COST_USD: z.coerce.number().positive().default(5),
   APP_URL: z.url().default("http://localhost:3000"),
 });

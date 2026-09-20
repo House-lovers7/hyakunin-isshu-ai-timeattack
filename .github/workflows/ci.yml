@@ -86,10 +86,8 @@ jobs:
     needs: static
     timeout-minutes: 10
     env:
-      # build 時点でも lib/env.ts が起動時検証するため最低限のダミー値を入れる
-      DATABASE_URL: postgres://unused:unused@127.0.0.1:54999/unused
-      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54999
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: anon_dummy
+      # lib/env.ts の変数は全て任意 / 既定値つき。CI では Jev 実呼び出しを確実に無効化する
+      LIVE_MODE: "false"
     steps:
       - uses: actions/checkout@v4
 

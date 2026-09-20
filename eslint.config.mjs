@@ -99,7 +99,7 @@ export default tseslint.config(
   // ビルドツール設定は env モジュールより前に評価されるので process.env を直接読む。
   // フレームワークが要求するシグネチャ (例: NextConfig['headers'] は async) にも従う必要がある。
   {
-    files: ["next.config.ts", "drizzle.config.ts", "vitest.config.ts", "*.config.ts"],
+    files: ["next.config.ts", "vitest.config.ts", "*.config.ts"],
     rules: {
       "no-restricted-properties": "off",
       "no-restricted-globals": "off",

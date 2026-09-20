@@ -7,16 +7,16 @@ import type { NextConfig } from "next";
  * - CSP は `unsafe-eval` を外す。ただし Next.js の dev HMR が eval を要求するため
  *   production ビルドでのみ厳格化し、dev は unsafe-eval を許容する
  * - frame-ancestors = 'self' (他サイトに埋め込まれない — clickjacking 防御)
- * - 外部サービス (Stripe / 分析等) を追加したら img-src / connect-src / frame-src を明示的に足す
+ * - 外部サービスを追加したら img-src / connect-src / frame-src を明示的に足す
+ *   (Jev API はサーバ側 Route Handler からのみ呼ぶため connect-src には載せない)
  */
 const isProd = process.env.NODE_ENV === "production";
 
-// 画像配信先のホワイトリスト (Supabase Storage + 自前)
-const IMAGE_SOURCES = ["'self'", "data:", "https://*.supabase.co", "https://*.supabase.in"].join(
-  " ",
-);
+// 画像配信先のホワイトリスト (札画像は public/cards/ に commit 済みのものだけを配信する)
+const IMAGE_SOURCES = ["'self'", "data:"].join(" ");
 
-const CONNECT_SOURCES = ["'self'", "https://*.supabase.co", "https://*.supabase.in"].join(" ");
+// ブラウザからの API 呼び出しは同一オリジン (/api/*) のみ
+const CONNECT_SOURCES = ["'self'"].join(" ");
 
 // script-src は自分自身 + nonce / hash ベースを前提にしたいが、MVP では
 // Tailwind 由来の inline style と Next.js の inline script を許可するため
