@@ -25,7 +25,9 @@ pnpm dev
 検証:
 
 ```bash
-pnpm typecheck && pnpm check && pnpm test && pnpm build
+pnpm check && pnpm lint:types && pnpm typecheck && pnpm test && pnpm build
 ```
+
+`lint:types`（型情報を使う ESLint。`process.env` 直参照や生 `fetch` の禁止などを機械強制する）は CI（`.github/workflows/ci.yml` の `static` ジョブ）では実行されるが、この一覧から漏れていた。ローカルの検証を通しても CI 側だけ落ちる状態を避けるため、CI と同じ手順に揃える。
 
 設計原則・禁止事項は `CLAUDE.md`、共通規約は `AGENTS.md` を参照。
